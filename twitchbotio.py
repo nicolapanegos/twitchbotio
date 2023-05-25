@@ -78,7 +78,7 @@ class TwitchBot(commands.Bot):
                 print("\033[98m {}\033[00m" .format(filtered_message))
                 #prLightGray(message_data)
             else:
-                prGreen('Error '+ response.status_code)
+                prRed('Error '+ response.status_code)
         
 twitchbot = TwitchBot()
 twitchbot.run()
