@@ -1,5 +1,5 @@
 # Set up credentials
-channel_name = 'il_nikk' # Channel from where to get messages
+channel_name = 'channel_name' # Channel name from where to get messages
 user_token = 'oauth:' # You can get oauth token form here here https://twitchapps.com/tmi/
 
 #exlude bot or other user (streamelemetns, nightbot etc)
