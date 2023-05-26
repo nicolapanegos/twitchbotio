@@ -1,5 +1,5 @@
 ##########################################################
-#             -= TwitchBotIO version 1.0 =-              #        
+#             -= TwitchBotIO version 1.1 =-              #        
 #    This bot is made to integrate twitch to the Driver  #
 #                                                        #
 # This bot need TwitchIO version 2.6.0 installed         #
@@ -9,30 +9,13 @@
 # Git https://github.com/nicolapanegos/twitchbotIO       #
 ##########################################################
 
-import re
-from colorama import Fore, Back, Style
-from twitchio.ext import commands
-import requests
-from requests.structures import CaseInsensitiveDict
+import modules
+import config
 
-# Set up credentials
-channel_name = "channel name"
-user_token = "oauth:" # You can get oauth token form here
-
-#exlude user (streamelemetns, nightbot etc)
-exlude_user = ["streamelements", "nightbot"]
-#Banned worlds
-banned_words = ['test1', 'testb', 'test3', 'testd']
-
-# Set up for inject POST to MuvDriver
-driver_url = 'http://localhost:51080/'
-driver_headers = "'Content-type' : 'application/json'"
-fixgraph_l = "{"
-fixgraph_r = "}"
-headers = CaseInsensitiveDict()
+headers = modules.CaseInsensitiveDict()
 headers["Content-Type"] = "application/json"
 
-# Utils
+# Pretty logs
 def prRed(skk): print("\033[91m {}\033[00m" .format(skk))
 def prGreen(skk): print("\033[92m {}\033[00m" .format(skk))
 def prYellow(skk): print("\033[93m {}\033[00m" .format(skk))
@@ -42,10 +25,10 @@ def prCyan(skk): print("\033[96m {}\033[00m" .format(skk))
 def prLightGray(skk): print("\033[97m {}\033[00m" .format(skk))
 def prBlack(skk): print("\033[98m {}\033[00m" .format(skk))
 
-class TwitchBot(commands.Bot):
+class TwitchBot(modules.commands.Bot):
     def __init__(self):
         # Login
-        super().__init__(token=user_token, prefix='?', initial_channels=[channel_name])
+        super().__init__(token=config.user_token, prefix='?', initial_channels=[config.channel_name])
 
     async def event_ready(self):
         # Start up log
@@ -54,22 +37,22 @@ class TwitchBot(commands.Bot):
     async def event_message(self, message):
         # utf-8 to be fix
         pattern = r'[\{\}\[\]@*\'"]'
-        filtered_message_re = re.sub(pattern, '', message.content)
+        filtered_message_re = modules.re.sub(pattern, '', message.content)
         #filtered_message = filtered_message_re.encode('utf-8')
         filtered_message = filtered_message_re
 
         # exlude user check
-        if message.author.name in exlude_user:
+        if message.author.name in config.exlude_user:
             print('---------------------------------------------------------------------------')
             prYellow(message.author.name + ' is on exlude list. Ignored...')
         # exlude ban words
-        elif filtered_message and any(word in filtered_message for word in banned_words):
+        elif filtered_message and any(word in filtered_message for word in config.banned_words):
             print('---------------------------------------------------------------------------')
             prRed(message.author.name + ' say a banned word. Ignored...')
         # approved messages
         elif filtered_message:
-            message_data =  f'{fixgraph_l}"author":"{message.author.name}", "content":"{filtered_message}"{fixgraph_r}'
-            response = requests.post(driver_url, message_data, headers=headers) # Send to the Driver
+            message_data =  f'{config.fixgraph_l}"author":"{message.author.name}", "content":"{filtered_message}"{config.fixgraph_r}'
+            response = modules.requests.post(config.driver_url, message_data, headers=headers) # Send to the Driver
             # debug prints
             print('---------------------------------------------------------------------------')
             if response.status_code == 200:
@@ -81,4 +64,20 @@ class TwitchBot(commands.Bot):
                 prRed('Error '+ response.status_code)
         
 twitchbot = TwitchBot()
-twitchbot.run()
+
+def Driver_connection(host, port):
+    sock = modules.socket.socket(modules.socket.AF_INET, modules.socket.SOCK_STREAM)
+    sock.settimeout(5) 
+    while True:
+        try:
+            sock.connect((host, int(port)))
+            prCyan(f'Connected to ' + host + ':' + config.driver_port)
+            prCyan('TwitcBotIO starting...')
+            twitchbot.run()
+            #sock.close()
+            break
+        except (modules.socket.timeout, ConnectionRefusedError):
+                prRed( config.driver_domain + ':' + config.driver_port + ' unreachable... I\'ll try again in 5 seconds...')
+                modules.time.sleep(5)
+
+Driver_connection(config.driver_domain, config.driver_port)
