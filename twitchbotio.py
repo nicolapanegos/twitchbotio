@@ -17,7 +17,7 @@ from requests.structures import CaseInsensitiveDict
 
 # Set up credentials
 channel_name = "channel name"
-user_token = "oauth:" # You can get oauth token form here
+user_token = "oauth:" # You can get oauth token form here https://twitchapps.com/tmi/
 
 #exlude user (streamelemetns, nightbot etc)
 exlude_user = ["streamelements", "nightbot"]
@@ -42,6 +42,7 @@ def prCyan(skk): print("\033[96m {}\033[00m" .format(skk))
 def prLightGray(skk): print("\033[97m {}\033[00m" .format(skk))
 def prBlack(skk): print("\033[98m {}\033[00m" .format(skk))
 
+#TwitchBot
 class TwitchBot(commands.Bot):
     def __init__(self):
         # Login
@@ -58,7 +59,7 @@ class TwitchBot(commands.Bot):
         #filtered_message = filtered_message_re.encode('utf-8')
         filtered_message = filtered_message_re
 
-        # exlude user check
+        # exlude user
         if message.author.name in exlude_user:
             print('---------------------------------------------------------------------------')
             prYellow(message.author.name + ' is on exlude list. Ignored...')
